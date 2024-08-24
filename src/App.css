@@ -1,6 +1,39 @@
 #root {
-	max-width: 1280px;
 	margin: 0 auto;
-	padding: 2rem;
 	text-align: center;
+	height: 100vh;
+	width: 100%;
+}
+
+.paper {
+	background-color: #282c34;
+	opacity: 1;
+	background-image: linear-gradient(#4d4f4f 1.5px, transparent 1.5px),
+		linear-gradient(to right, #4d4f4f 1.5px, #282c34 1.5px);
+	background-size: 30px 30px;
+}
+
+.cross {
+	background-color: #21252b;
+	opacity: 1;
+	background: radial-gradient(
+			circle,
+			transparent 20%,
+			#21252b 20%,
+			#21252b 80%,
+			transparent 80%,
+			transparent
+		),
+		radial-gradient(
+				circle,
+				transparent 20%,
+				#21252b 20%,
+				#21252b 80%,
+				transparent 80%,
+				transparent
+			)
+			25px 25px,
+		linear-gradient(#282c34 2px, transparent 2px) 0 -1px,
+		linear-gradient(90deg, #282c34 2px, #21252b 2px) -1px 0;
+	background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
 }
