@@ -26,8 +26,15 @@ function App() {
 	})
 
 	const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-		null
+		() => {
+			const savedSelectedCategory = localStorage.getItem('selectedCategory')
+			return savedSelectedCategory ? JSON.parse(savedSelectedCategory) : null
+		}
 	)
+
+	useEffect(() => {
+		localStorage.setItem('selectedCategory', JSON.stringify(selectedCategory))
+	}, [selectedCategory])
 
 	useEffect(() => {
 		localStorage.setItem('components', JSON.stringify(components))
