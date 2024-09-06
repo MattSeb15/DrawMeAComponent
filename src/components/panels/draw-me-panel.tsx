@@ -265,7 +265,7 @@ const Controls: React.FC<ControlsProps> = ({
 					</button>
 				</div>
 				<button
-					className='btn btn-block btn-sm border-none bg-green-900/50 hover:bg-green-900/30'
+					className='btn btn-block btn-sm border-none bg-green-800 hover:bg-green-900'
 					onClick={() => {
 						if (canvasRef.current) {
 							const ctx = canvasRef.current.getContext('2d')
@@ -273,7 +273,7 @@ const Controls: React.FC<ControlsProps> = ({
 								const dataUrl = ctx.canvas.toDataURL()
 								onCreateComponent({
 									name: componentName,
-									categoryId: selectedCategory ? selectedCategory.id : '1',
+									categoryId: '1',
 									dataUrl,
 								})
 							}
