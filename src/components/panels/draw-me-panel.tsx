@@ -224,46 +224,6 @@ const Controls: React.FC<ControlsProps> = ({
 					value={componentName}
 					onChange={e => onChangeComponentName(e.target.value)}
 				/>
-				<label className='form-control w-full max-w-xs'>
-					<div className='label'>
-						<span className='label-text'>Select Category</span>
-					</div>
-					<select
-						className='select select-bordered select-sm w-full max-w-xs bg-custom-gray-1 max-h-8'
-						onChange={e =>
-							onChangeCategory(
-								categories.find(category => category.name === e.target.value) ||
-									categories[0]
-							)
-						}
-						value={
-							selectedCategory ? selectedCategory.name : categories[0].name
-						}>
-						{categories.map(category => (
-							<option key={category.id}>{category.name}</option>
-						))}
-					</select>
-				</label>
-				<div className='flex gap-4'>
-					<input
-						type='text'
-						placeholder='Create new category'
-						className='input input-bordered input-sm w-full max-w-xs bg-custom-gray-1'
-						value={categoryName}
-						onChange={e => onChangeCategoryName(e.target.value)}
-					/>
-					<button
-						className='btn btn-square btn-sm bg-custom-gray-3 hover:bg-custom-gray-3 border-none text-xl'
-						onClick={() => {
-							onCreateCategory({
-								name: categoryName,
-								id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
-							})
-							onChangeCategoryName('')
-						}}>
-						<span className='icon-[pixelarticons--plus]'></span>
-					</button>
-				</div>
 				<button
 					className='btn btn-block btn-sm border-none bg-green-800 hover:bg-green-900'
 					onClick={() => {
