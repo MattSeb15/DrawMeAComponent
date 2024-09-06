@@ -17,6 +17,7 @@ function App() {
 		return savedCategories
 			? JSON.parse(savedCategories)
 			: [
+					{ name: 'All', id: '0' },
 					{ name: 'Uncategorized', id: '1' },
 					{ name: 'Button', id: '2' },
 					{ name: 'Input', id: '3' },
@@ -32,6 +33,12 @@ function App() {
 		}
 	)
 
+	const [categoryName, setCategoryName] = useState('')
+
+	const onChangeCategoryName = (name: string) => {
+		setCategoryName(name)
+	}
+
 	useEffect(() => {
 		localStorage.setItem('selectedCategory', JSON.stringify(selectedCategory))
 	}, [selectedCategory])
@@ -45,8 +52,8 @@ function App() {
 	}, [categories])
 
 	return (
-		<div className='grid grid-cols-5 grid-rows-5 w-full h-full bg-custom-gray-3'>
-			<div className='col-span-4 row-span-4 relative'>
+		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3'>
+			<div className='col-span-7 row-span-6 relative'>
 				<div className='w-full h-full overflow-scroll'>
 					<div className='w-[5000px] h-[5000px] paper'></div>
 				</div>
@@ -55,9 +62,21 @@ function App() {
 						<div className='w-fit h-[85%] max-h-fit bg-custom-gray-3 p-2 drop-shadow-lg overflow-auto border-custom-gray-2 border-2 rounded-lg absolute bottom-7 left-2'>
 							<div className='flex flex-col gap-2 relative'>
 								{selectedCategory ? (
-									components.filter(
-										component => component.categoryId === selectedCategory.id
-									).length > 0 ? (
+									selectedCategory.id === '0' ? (
+										components.map(component => (
+											<ComponentPanel
+												key={component.name}
+												component={component}
+												categoryName={
+													categories.find(
+														category => category.id === component.categoryId
+													)?.name
+												}
+											/>
+										))
+									) : components.filter(
+											component => component.categoryId === selectedCategory.id
+									  ).length > 0 ? (
 										components
 											.filter(
 												component =>
@@ -88,7 +107,7 @@ function App() {
 					</>
 				)}
 			</div>
-			<div className='row-span-5 col-start-5 bg-custom-gray-1'>
+			<div className='col-span-2 row-span-7 bg-custom-gray-1'>
 				<div className='flex flex-col w-full h-full items-center'>
 					<DrawMePanel
 						categories={categories}
@@ -97,29 +116,69 @@ function App() {
 							console.log('created category:', category)
 						}}
 						onCreateComponent={component => {
+							const currentId = selectedCategory?.id || '1'
+							component.categoryId = currentId
 							if (component.name === '')
-								component.name = 'Component ' + (components.length + 1)
+								component.name = 'C-' + crypto.randomUUID().slice(0, 5)
 							setComponents([...components, component])
 						}}
 					/>
 				</div>
 			</div>
-			<div className='col-span-4 row-start-5 bg-custom-gray-2 relative'>
-				<div className='flex w-full h-full gap-4 items-center p-2 overflow-auto'>
-					{categories.map((category, i) => (
-						<CategoryItem
-							key={category.id}
-							className={i === 0 ? 'ml-5' : ''}
-							category={category}
-							selected={selectedCategory?.id === category.id}
-							components={components.filter(c => c.categoryId === category.id)}
-							onSelectCategory={category => {
-								if (selectedCategory?.id === category.id)
-									setSelectedCategory(null)
-								else setSelectedCategory(category)
-							}}
-						/>
-					))}
+			<div className='col-span-7 row-start-7 bg-custom-gray-2 relative'>
+				<div className='flex w-full h-full'>
+					<div className='flex gap-4 items-center p-2 overflow-auto'>
+						{categories.map((category, i) => (
+							<CategoryItem
+								key={category.id}
+								className={i === 0 ? 'ml-5' : ''}
+								category={category}
+								selected={selectedCategory?.id === category.id}
+								components={
+									category.id === '0'
+										? components
+										: components.filter(
+												component => component.categoryId === category.id
+										  )
+								}
+								onSelectCategory={category => {
+									if (selectedCategory?.id === category.id)
+										setSelectedCategory(null)
+									else setSelectedCategory(category)
+								}}
+							/>
+						))}
+					</div>
+					<div className='w-3/12 flex-none h-full bg-custom-gray-1 border-4 border-custom-gray-2'>
+						<div className='flex gap-4 h-full items-center justify-center p-2'>
+							<input
+								type='text'
+								placeholder='Create new category'
+								className='input input-bordered input-sm w-full max-w-xs bg-custom-gray-1'
+								value={categoryName}
+								onChange={e => onChangeCategoryName(e.target.value)}
+							/>
+							<button
+								className='btn btn-square btn-sm bg-custom-gray-3 hover:bg-custom-gray-3 border-none text-xl'
+								onClick={() => {
+									if (categoryName === '') return
+
+									const id = crypto.randomUUID()
+									setCategories([...categories, { name: categoryName, id }])
+									setCategoryName('')
+
+									/* 			onCreateCategory({
+										name: categoryName,
+										id: crypto
+											.getRandomValues(new Uint32Array(1))[0]
+											.toString(16),
+									})
+									onChangeCategoryName('') */
+								}}>
+								<span className='icon-[pixelarticons--plus]'></span>
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
