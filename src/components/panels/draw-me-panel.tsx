@@ -1,24 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import {
 	CanvasProps,
-	Category,
 	ControlsProps,
 	DrawMePanelProps,
 } from '../../interfaces/panels/draw-me-panel'
 
-const DrawMePanel: React.FC<DrawMePanelProps> = ({
-	categories,
-	onCreateComponent,
-	onCreateCategory,
-}) => {
+const DrawMePanel: React.FC<DrawMePanelProps> = ({ onCreateComponent }) => {
 	const [color, setColor] = useState('#ffffff')
 	const [brushSize, setBrushSize] = useState(3)
 	const [componentName, setComponentName] = useState('')
-	const [categoryName, setCategoryName] = useState('')
-
-	const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-		null
-	)
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 
 	const clearCanvas = () => {
@@ -26,11 +16,6 @@ const DrawMePanel: React.FC<DrawMePanelProps> = ({
 		if (ctx) {
 			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 		}
-	}
-
-	const onChangeCategory = (category: Category) => {
-		setSelectedCategory(category)
-		console.log(category)
 	}
 
 	const onChangeComponentName = (name: string) => {
