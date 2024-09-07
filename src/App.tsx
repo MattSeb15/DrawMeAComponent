@@ -168,7 +168,7 @@ function App() {
 				</div>
 			</div>
 			<div className='col-span-7 row-start-7 bg-custom-gray-2 relative'>
-				<div className='flex w-full h-full'>
+				<div className='flex w-full h-full justify-between'>
 					<div className='flex gap-4 items-center p-2 overflow-auto'>
 						{categories.map((category, i) => (
 							<CategoryItem
