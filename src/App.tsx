@@ -33,6 +33,9 @@ function App() {
 		}
 	)
 
+	const [auxSelectedCategory, setAuxSelectedCategory] =
+		useState<Category | null>(null)
+
 	const [categoryName, setCategoryName] = useState('')
 
 	const onChangeCategoryName = (name: string) => {
@@ -51,8 +54,52 @@ function App() {
 		localStorage.setItem('categories', JSON.stringify(categories))
 	}, [categories])
 
+	const [contextMenu, setContextMenu] = useState<{
+		x: number
+		y: number
+	} | null>(null)
+
+	const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		const menuHeight = 95 // Altura aproximada del menú
+		const windowHeight = window.innerHeight
+		const cursorY = e.clientY
+
+		let y = cursorY
+		if (cursorY + menuHeight > windowHeight) {
+			y = cursorY - menuHeight
+		}
+
+		setContextMenu({ x: e.clientX, y })
+	}
+
+	const handleClickOutside = () => {
+		setContextMenu(null)
+	}
+
+	const handleMouseDown = (
+		e: React.MouseEvent<HTMLDivElement>,
+		category: Category
+	) => {
+		if (contextMenu) {
+			setContextMenu(null)
+		}
+
+		if (e.button === 2) {
+			console.log('right click to:', category)
+			setAuxSelectedCategory(category)
+		}
+	}
+
+	useEffect(() => {
+		document.addEventListener('click', handleClickOutside)
+		return () => {
+			document.removeEventListener('click', handleClickOutside)
+		}
+	}, [])
+
 	return (
-		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3'>
+		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
 			<div className='col-span-7 row-span-6 relative'>
 				<div className='w-full h-full overflow-scroll'>
 					<div className='w-[5000px] h-[5000px] paper'></div>
@@ -141,6 +188,10 @@ function App() {
 										setSelectedCategory(null)
 									else setSelectedCategory(category)
 								}}
+								onContextMenu={i === 0 ? undefined : handleContextMenu}
+								onMouseDown={e =>
+									i === 0 ? undefined : handleMouseDown(e, category)
+								}
 							/>
 						))}
 					</div>
@@ -176,6 +227,33 @@ function App() {
 					</div>
 				</div>
 			</div>
+			{contextMenu && (
+				<ul
+					className='absolute rounded-lg bg-custom-gray-3 border-2 border-custom-gray-2 shadow-lg z-50'
+					style={{
+						top: contextMenu.y,
+						left: contextMenu.x,
+					}}>
+					<li
+						className='btn rounded-b-none bg-inherit border-none flex hover:bg-custom-gray-2/50'
+						onClick={() => {
+							setCategories(
+								categories.filter(
+									category => category.id !== auxSelectedCategory?.id
+								)
+							)
+							setContextMenu(null)
+						}}>
+						<span className='icon-[pixelarticons--trash-alt]'></span>
+						<p>Borrar</p>
+					</li>
+					<div className='divider h-0 my-1'></div>
+					<li className='btn rounded-t-none bg-inherit border-none flex hover:bg-custom-gray-2/50'>
+						<span className='icon-[pixelarticons--edit]'></span>
+						<p>Editar</p>
+					</li>
+				</ul>
+			)}
 		</div>
 	)
 }

@@ -1,16 +1,26 @@
 import { Category, Component } from '../../interfaces/panels/draw-me-panel'
 
-const CategoryItem: React.FC<{
-	className?: string
-	category: Category
-	components: Component[]
-	selected: boolean
-	onSelectCategory: (category: Category) => void
-}> = ({ category, components, onSelectCategory, selected, className }) => {
+const CategoryItem: React.FC<
+	{
+		className?: string
+		category: Category
+		components: Component[]
+		selected: boolean
+		onSelectCategory: (category: Category) => void
+	} & React.HTMLProps<HTMLDivElement>
+> = ({
+	category,
+	components,
+	onSelectCategory,
+	selected,
+	className,
+	...divProps
+}) => {
 	return (
 		<div
 			className={`indicator w-fit h-fit ` + className}
-			onClick={() => onSelectCategory(category)}>
+			onClick={() => onSelectCategory(category)}
+			{...divProps}>
 			<span className='indicator-item badge indicator-start indicator-bottom bg-custom-gray-3 border border-custom-gray-1 text-white font-bold'>
 				{components.length}
 			</span>
