@@ -10,9 +10,7 @@ export interface Category {
 }
 
 export interface DrawMePanelProps {
-	categories: Category[]
 	onCreateComponent: (component: Component) => void
-	onCreateCategory: (category: Category) => void
 }
 
 export interface CanvasProps {
