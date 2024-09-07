@@ -110,11 +110,6 @@ function App() {
 			<div className='col-span-2 row-span-7 bg-custom-gray-1'>
 				<div className='flex flex-col w-full h-full items-center'>
 					<DrawMePanel
-						categories={categories}
-						onCreateCategory={category => {
-							setCategories([...categories, category])
-							console.log('created category:', category)
-						}}
 						onCreateComponent={component => {
 							const currentId = selectedCategory?.id || '1'
 							component.categoryId = currentId
