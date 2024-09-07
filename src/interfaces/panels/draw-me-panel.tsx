@@ -26,15 +26,9 @@ export interface ControlsProps {
 	color: string
 	brushSize: number
 	componentName: string
-	categoryName: string
-	categories: Category[]
-	selectedCategory: Category | null
 	onColorChange: (color: string) => void
 	onBrushSizeChange: (size: number) => void
 	onClear: () => void
 	onChangeComponentName: (name: string) => void
-	onChangeCategoryName: (name: string) => void
-	onCreateCategory: (category: Category) => void
-	onChangeCategory: (category: Category) => void
 	onCreateComponent: (component: Component) => void
 }

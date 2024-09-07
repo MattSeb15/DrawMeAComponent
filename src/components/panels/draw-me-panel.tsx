@@ -51,16 +51,10 @@ const DrawMePanel: React.FC<DrawMePanelProps> = ({
 				color={color}
 				brushSize={brushSize}
 				componentName={componentName}
-				categoryName={categoryName}
-				categories={categories}
-				selectedCategory={selectedCategory}
 				onColorChange={setColor}
 				onBrushSizeChange={setBrushSize}
 				onClear={clearCanvas}
 				onChangeComponentName={onChangeComponentName}
-				onChangeCategoryName={setCategoryName}
-				onCreateCategory={onCreateCategory}
-				onChangeCategory={onChangeCategory}
 				onCreateComponent={c => {
 					onCreateComponent(c)
 					//clear canvas
@@ -175,15 +169,9 @@ const Controls: React.FC<ControlsProps> = ({
 	color,
 	brushSize,
 	componentName,
-	categoryName,
-	categories,
-	selectedCategory,
 	onColorChange,
 	onBrushSizeChange,
 	onChangeComponentName,
-	onChangeCategoryName,
-	onCreateCategory,
-	onChangeCategory,
 	onCreateComponent,
 }) => {
 	return (
