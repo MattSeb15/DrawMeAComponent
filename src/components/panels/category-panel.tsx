@@ -41,12 +41,16 @@ const CategoryItem: React.FC<
 	)
 }
 
-export const ComponentPanel: React.FC<{
-	component: Component
-	categoryName?: string
-}> = ({ component, categoryName }) => {
+export const ComponentPanel: React.FC<
+	{
+		component: Component
+		categoryName?: string
+	} & React.HTMLProps<HTMLDivElement>
+> = ({ component, categoryName, ...props }) => {
 	return (
-		<div className='flex-none size-32 bg-custom-gray-2 rounded-lg relative'>
+		<div
+			className='flex-none size-32 bg-custom-gray-2 rounded-lg relative'
+			{...props}>
 			<div className='absolute w-full top-1 px-1 flex justify-center'>
 				<p className='font-medium w-fit text-xs text-center px-2 bg-custom-gray-3/80 rounded truncate'>
 					{component.name}

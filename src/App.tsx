@@ -36,6 +36,9 @@ function App() {
 	const [auxSelectedCategory, setAuxSelectedCategory] =
 		useState<Category | null>(null)
 
+	const [auxSelectedComponent, setAuxSelectedComponent] =
+		useState<Component | null>(null)
+
 	const [categoryName, setCategoryName] = useState('')
 
 	const onChangeCategoryName = (name: string) => {
@@ -76,6 +79,7 @@ function App() {
 	const handleClickOutside = () => {
 		setContextMenu(null)
 		setAuxSelectedCategory(null)
+		setAuxSelectedComponent(null)
 	}
 
 	const handleMouseDown = (
@@ -89,6 +93,22 @@ function App() {
 		if (e.button === 2) {
 			console.log('right click to:', category)
 			setAuxSelectedCategory(category)
+			setAuxSelectedComponent(null)
+		}
+	}
+
+	const handleMouseDownComponent = (
+		e: React.MouseEvent<HTMLDivElement>,
+		component: Component
+	) => {
+		if (contextMenu) {
+			setContextMenu(null)
+		}
+
+		if (e.button === 2) {
+			console.log('right click to:', component)
+			setAuxSelectedComponent(component)
+			setAuxSelectedCategory(null)
 		}
 	}
 
@@ -121,6 +141,10 @@ function App() {
 															category => category.id === component.categoryId
 														)?.name
 													}
+													onContextMenu={handleContextMenu}
+													onMouseDown={e =>
+														handleMouseDownComponent(e, component)
+													}
 												/>
 											))
 										) : (
@@ -147,6 +171,10 @@ function App() {
 												<ComponentPanel
 													key={component.name}
 													component={component}
+													onContextMenu={handleContextMenu}
+													onMouseDown={e =>
+														handleMouseDownComponent(e, component)
+													}
 												/>
 											))
 									) : (
@@ -251,6 +279,16 @@ function App() {
 					<li
 						className='btn rounded-b-none bg-inherit border-none flex hover:bg-custom-gray-2/50'
 						onClick={() => {
+							if (auxSelectedComponent) {
+								setComponents(
+									components.filter(
+										component => component.name !== auxSelectedComponent?.name
+									)
+								)
+								setAuxSelectedComponent(null)
+								setContextMenu(null)
+							}
+
 							if (!auxSelectedCategory) return
 							setCategories(
 								categories.filter(
