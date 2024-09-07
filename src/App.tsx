@@ -110,17 +110,30 @@ function App() {
 							<div className='flex flex-col gap-2 relative'>
 								{selectedCategory ? (
 									selectedCategory.id === '0' ? (
-										components.map(component => (
-											<ComponentPanel
-												key={component.name}
-												component={component}
-												categoryName={
-													categories.find(
-														category => category.id === component.categoryId
-													)?.name
-												}
-											/>
-										))
+										components.length > 0 ? (
+											components.map(component => (
+												<ComponentPanel
+													key={component.name}
+													component={component}
+													categoryName={
+														categories.find(
+															category => category.id === component.categoryId
+														)?.name
+													}
+												/>
+											))
+										) : (
+											<div className='px-3'>
+												<span className='icon-[pixelarticons--inbox-all] size-10'></span>
+												<p className='text-sm text-center font-bold'>
+													All
+													<br />
+													Components
+													<br />
+													(Add some components)
+												</p>
+											</div>
+										)
 									) : components.filter(
 											component => component.categoryId === selectedCategory.id
 									  ).length > 0 ? (
