@@ -242,6 +242,12 @@ function App() {
 									category => category.id !== auxSelectedCategory?.id
 								)
 							)
+							//also delete all components from this category
+							setComponents(
+								components.filter(
+									component => component.categoryId !== auxSelectedCategory?.id
+								)
+							)
 							setContextMenu(null)
 						}}>
 						<span className='icon-[pixelarticons--trash-alt]'></span>
