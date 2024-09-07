@@ -75,6 +75,7 @@ function App() {
 
 	const handleClickOutside = () => {
 		setContextMenu(null)
+		setAuxSelectedCategory(null)
 	}
 
 	const handleMouseDown = (
@@ -250,6 +251,7 @@ function App() {
 					<li
 						className='btn rounded-b-none bg-inherit border-none flex hover:bg-custom-gray-2/50'
 						onClick={() => {
+							if (!auxSelectedCategory) return
 							setCategories(
 								categories.filter(
 									category => category.id !== auxSelectedCategory?.id
@@ -261,6 +263,7 @@ function App() {
 									component => component.categoryId !== auxSelectedCategory?.id
 								)
 							)
+							setAuxSelectedCategory(null)
 							setContextMenu(null)
 						}}>
 						<span className='icon-[pixelarticons--trash-alt]'></span>
