@@ -171,7 +171,7 @@ function App() {
 				<div className='flex flex-col w-full h-full items-center'>
 					<DrawMePanel
 						onCreateComponent={component => {
-							const currentId = selectedCategory?.id || '1'
+							const currentId = selectedCategory?.id || '0'
 							component.categoryId = currentId
 							if (component.name === '')
 								component.name = 'C-' + crypto.randomUUID().slice(0, 5)
