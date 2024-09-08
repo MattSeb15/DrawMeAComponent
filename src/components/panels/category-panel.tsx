@@ -45,10 +45,18 @@ export const ComponentPanel: React.FC<
 	{
 		component: Component
 		categoryName?: string
+		onDragComponentStart?: (
+			e: React.DragEvent<HTMLDivElement>,
+			component: Component
+		) => void
 	} & React.HTMLProps<HTMLDivElement>
-> = ({ component, categoryName, ...props }) => {
+> = ({ component, categoryName, onDragComponentStart, ...props }) => {
 	return (
 		<div
+			draggable
+			onDragStart={e =>
+				onDragComponentStart && onDragComponentStart(e, component)
+			}
 			className='flex-none size-32 bg-custom-gray-2 rounded-lg relative'
 			{...props}>
 			<div className='absolute w-full top-1 px-1 flex justify-center'>
@@ -63,12 +71,28 @@ export const ComponentPanel: React.FC<
 					</p>
 				</div>
 			)}
-			<img
-				src={component.dataUrl}
-				alt={component.name}
-				className='w-full h-full object-contain rounded-t-xl'
+			<DraggableComponentImg
+				component={component}
+				/* onDragStart={e => onDragImgStart && onDragImgStart(e, component)} */
 			/>
 		</div>
+	)
+}
+
+export const DraggableComponentImg: React.FC<
+	{
+		component: Component
+	} & React.HTMLProps<HTMLImageElement>
+> = ({ component, ...props }) => {
+	return (
+		<img
+			draggable={false}
+			id={component.id}
+			src={component.dataUrl}
+			alt={component.name}
+			className='w-full h-full object-contain rounded-t-xl'
+			{...props}
+		/>
 	)
 }
 

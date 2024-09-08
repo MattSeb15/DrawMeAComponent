@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { Category, Component } from './interfaces/panels/draw-me-panel'
+import {
+	CanvasComponent,
+	Category,
+	Component,
+} from './interfaces/panels/draw-me-panel'
 import DrawMePanel from './components/panels/draw-me-panel'
 import CategoryItem, {
 	ComponentPanel,
@@ -32,6 +36,18 @@ function App() {
 			return savedSelectedCategory ? JSON.parse(savedSelectedCategory) : null
 		}
 	)
+
+	const [canvasComponents, setCanvasComponents] = useState<CanvasComponent[]>(
+		() => {
+			const savedCanvasComponents = localStorage.getItem('canvasComponents')
+			return savedCanvasComponents ? JSON.parse(savedCanvasComponents) : []
+		}
+	)
+	/* TODO MAKE A STATE WITH ALL SETTINGS OF DRAWMEACOMPONENT APP */
+
+	useEffect(() => {
+		localStorage.setItem('canvasComponents', JSON.stringify(canvasComponents))
+	}, [canvasComponents])
 
 	const [auxSelectedCategory, setAuxSelectedCategory] =
 		useState<Category | null>(null)
@@ -119,11 +135,94 @@ function App() {
 		}
 	}, [])
 
+	const handleOnDragImgStart = (
+		e: React.DragEvent<HTMLDivElement>,
+		component: Component
+	) => {
+		e.dataTransfer.setData('component', JSON.stringify(component))
+		console.log('drag start')
+		console.log(component)
+	}
+
+	const handleOnDrop = (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		const component = JSON.parse(
+			e.dataTransfer.getData('component')
+		) as Component
+		const canvas = canvasRef.current
+		if (canvas) {
+			const rect = canvas.getBoundingClientRect()
+			const x = e.clientX - rect.left
+			const y = e.clientY - rect.top
+			const scale = 1
+
+			setCanvasComponents([
+				...canvasComponents,
+				{
+					component,
+					x,
+					y,
+					zIndex: canvasComponents.length + 1,
+					scale,
+				},
+			])
+		}
+	}
+	const canvasRef = useRef<HTMLDivElement>(null)
+
+	const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 })
+	useEffect(() => {
+		const handleScroll = () => {
+			if (canvasRef.current) {
+				setScrollPosition({
+					x: canvasRef.current.scrollLeft,
+					y: canvasRef.current.scrollTop,
+				})
+			}
+		}
+
+		const canvasElement = canvasRef.current
+		if (canvasElement) {
+			canvasElement.addEventListener('scroll', handleScroll)
+		}
+
+		return () => {
+			if (canvasElement) {
+				canvasElement.removeEventListener('scroll', handleScroll)
+			}
+		}
+	}, [])
 	return (
 		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
 			<div className='col-span-7 row-span-6 relative'>
 				<div className='w-full h-full overflow-scroll'>
-					<div className='w-[5000px] h-[5000px] paper'></div>
+					<div
+						ref={canvasRef}
+						onDrop={handleOnDrop}
+						onDragOver={e => e.preventDefault()}
+						className='w-[5000px] h-[5000px] paper relative'>
+						{canvasComponents.map(({ component, x, y, scale }, i) => (
+							<div
+								onClick={() => {
+									console.log(component)
+								}}
+								key={component.id + '_' + i}
+								className='absolute'
+								style={{
+									transform: `translate(${x - scrollPosition.x}px, ${
+										y - scrollPosition.y
+									}px) scale(${scale})`,
+								}}>
+								<p>{component.name}</p>
+								<img
+									draggable={false}
+									src={component.dataUrl}
+									alt={component.name}
+									className='size-32 object-contain'
+								/>
+							</div>
+						))}
+					</div>
 				</div>
 				{selectedCategory && (
 					<>
@@ -134,7 +233,8 @@ function App() {
 										components.length > 0 ? (
 											components.map(component => (
 												<ComponentPanel
-													key={component.name}
+													key={component.id}
+													onDragComponentStart={handleOnDragImgStart}
 													component={component}
 													categoryName={
 														categories.find(
@@ -175,6 +275,7 @@ function App() {
 													onMouseDown={e =>
 														handleMouseDownComponent(e, component)
 													}
+													onDragComponentStart={handleOnDragImgStart}
 												/>
 											))
 									) : (
@@ -202,6 +303,7 @@ function App() {
 						onCreateComponent={component => {
 							const currentId = selectedCategory?.id || '0'
 							component.categoryId = currentId
+							component.id = crypto.randomUUID()
 							if (component.name === '')
 								component.name = 'C-' + crypto.randomUUID().slice(0, 5)
 							setComponents([...components, component])
