@@ -31,3 +31,27 @@ export interface ControlsProps {
 	onChangeComponentName: (name: string) => void
 	onCreateComponent: (component: Component) => void
 }
+
+export interface CanvasComponent {
+	component: Component
+	x: number
+	y: number
+	scale: number
+}
+
+export interface ScrollPosition {
+	x: number
+	y: number
+}
+
+export interface DrawMePanelState {
+	components: Component[]
+	categories: Category[]
+	selectedCategory?: Category
+	selectedComponent?: Component
+	canvasComponents: CanvasComponent[]
+	color: string
+	brushSize: number
+	componentName: string
+	canvasScrollPosition: ScrollPosition
+}
