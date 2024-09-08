@@ -36,6 +36,7 @@ export interface CanvasComponent {
 	component: Component
 	x: number
 	y: number
+	zIndex: number
 	scale: number
 }
 
