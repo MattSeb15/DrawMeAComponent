@@ -1,4 +1,5 @@
 export interface Component {
+	id: string
 	name: string
 	categoryId: string
 	dataUrl: string
