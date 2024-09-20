@@ -32,10 +32,10 @@ export interface ControlsProps {
 	onCreateComponent: (component: Component) => void
 }
 
-export interface CanvasComponent {
+export interface ICanvasComponent {
+	id: string
 	component: Component
-	x: number
-	y: number
+	transform: string
 	zIndex: number
 	scale: number
 }
@@ -50,7 +50,7 @@ export interface DrawMePanelState {
 	categories: Category[]
 	selectedCategory?: Category
 	selectedComponent?: Component
-	canvasComponents: CanvasComponent[]
+	canvasComponents: ICanvasComponent[]
 	color: string
 	brushSize: number
 	componentName: string

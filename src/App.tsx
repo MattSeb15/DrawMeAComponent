@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import {
-	CanvasComponent,
+	ICanvasComponent,
 	Category,
 	Component,
 } from './interfaces/panels/draw-me-panel'
@@ -9,6 +9,8 @@ import DrawMePanel from './components/panels/draw-me-panel'
 import CategoryItem, {
 	ComponentPanel,
 } from './components/panels/category-panel'
+import Moveable from 'react-moveable'
+import Selecto from 'react-selecto'
 
 function App() {
 	const [components, setComponents] = useState<Component[]>(() => {
@@ -37,7 +39,7 @@ function App() {
 		}
 	)
 
-	const [canvasComponents, setCanvasComponents] = useState<CanvasComponent[]>(
+	const [canvasComponents, setCanvasComponents] = useState<ICanvasComponent[]>(
 		() => {
 			const savedCanvasComponents = localStorage.getItem('canvasComponents')
 			return savedCanvasComponents ? JSON.parse(savedCanvasComponents) : []
@@ -155,13 +157,15 @@ function App() {
 			const x = e.clientX - rect.left
 			const y = e.clientY - rect.top
 			const scale = 1
+			const id = component.id + '_' + canvasComponents.length
+			const style = `translate(${x}px, ${y}px)`
 
 			setCanvasComponents([
 				...canvasComponents,
 				{
+					id,
 					component,
-					x,
-					y,
+					transform: style,
 					zIndex: canvasComponents.length + 1,
 					scale,
 				},
@@ -192,6 +196,11 @@ function App() {
 			}
 		}
 	}, [])
+
+	const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([])
+	const moveableRef = useRef<Moveable>(null)
+	const selectoRef = useRef<Selecto>(null)
+
 	return (
 		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
 			<div className='col-span-7 row-span-6 relative'>
@@ -200,28 +209,119 @@ function App() {
 						ref={canvasRef}
 						onDrop={handleOnDrop}
 						onDragOver={e => e.preventDefault()}
-						className='w-[5000px] h-[5000px] paper relative'>
-						{canvasComponents.map(({ component, x, y, scale }, i) => (
+						className='w-[5000px] h-[5000px] paper relative elements'>
+						{/* 	<div
+							className='target bg-white size-28'
+							ref={targetRef}>
+							Target
+						</div> */}
+						{canvasComponents.map((c, i) => (
 							<div
-								onClick={() => {
-									console.log(component)
-								}}
-								key={component.id + '_' + i}
-								className='absolute'
+								className='target absolute'
 								style={{
-									transform: `translate(${x - scrollPosition.x}px, ${
-										y - scrollPosition.y
-									}px) scale(${scale})`,
-								}}>
-								<p>{component.name}</p>
+									transform: c.transform,
+								}}
+								id={c.id}
+								key={i}>
 								<img
 									draggable={false}
-									src={component.dataUrl}
-									alt={component.name}
+									src={c.component.dataUrl}
+									alt={c.component.name}
 									className='size-32 object-contain'
 								/>
 							</div>
 						))}
+
+						<Moveable
+							ref={moveableRef}
+							target={targets}
+							draggable={true}
+							scalable={true}
+							rotatable={true}
+							throttleScale={0}
+							keepRatio={true}
+							onClickGroup={e => {
+								selectoRef.current!.clickTarget(e.inputEvent, e.inputTarget)
+							}}
+							/* 	persistData={{}} */
+							onRender={e => {
+								/* console.log(e.moveable.getRect()) */
+
+								e.target.style.cssText += e.cssText
+							}}
+							onRenderGroup={e => {
+								e.events.forEach(ev => {
+									ev.target.style.cssText += ev.cssText
+								})
+							}}
+							onRenderEnd={e => {
+								console.log(e.target.id)
+								console.log(e.target.style.cssText)
+								console.log(e.target)
+								const finalTransform = e.target.style.transform
+								const id = e.target.id
+								const canvasComponent = canvasComponents.find(c => c.id === id)
+								if (canvasComponent) {
+									const newCanvasComponents = canvasComponents.map(c =>
+										c.id === id ? { ...c, transform: finalTransform } : c
+									)
+									setCanvasComponents(newCanvasComponents)
+								}
+							}}
+							onRenderGroupEnd={e => {
+								console.log(e.targets.map(t => t.style.transform))
+								const targets = e.targets
+								const updatedCanvasComponents = canvasComponents.map(c => {
+									const target = targets.find(t => t.id === c.id)
+									if (target) {
+										return { ...c, transform: target.style.transform }
+									}
+									return c
+								})
+								setCanvasComponents(updatedCanvasComponents)
+							}}
+
+							/* onChangeTargets={e => {
+								console.log(
+									'??',
+									JSON.stringify(e.moveable.getRect(), undefined, 4)
+								)
+							}} */
+						/>
+						<Selecto
+							ref={selectoRef}
+							dragContainer={'.elements'}
+							selectableTargets={['.target']}
+							hitRate={0}
+							selectByClick={true}
+							selectFromInside={false}
+							toggleContinueSelect={['shift']}
+							ratio={0}
+							onDragStart={e => {
+								const target = e.inputEvent.target
+								if (
+									moveableRef.current!.isMoveableElement(target) ||
+									targets!.some(t => t === target || t.contains(target))
+								) {
+									e.stop()
+								}
+							}}
+							onSelect={e => {
+								if (e.isDragStartEnd) {
+									return
+								}
+								setTargets(e.selected)
+							}}
+							onSelectEnd={e => {
+								if (e.isDragStartEnd) {
+									e.inputEvent.preventDefault()
+									moveableRef.current!.waitToChangeTarget().then(() => {
+										moveableRef.current!.dragStart(e.inputEvent)
+									})
+								}
+								setTargets(e.selected)
+							}}
+						/>
 					</div>
 				</div>
 				{selectedCategory && (
