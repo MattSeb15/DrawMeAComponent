@@ -203,12 +203,54 @@ const Controls: React.FC<ControlsProps> = ({
 						if (canvasRef.current) {
 							const ctx = canvasRef.current.getContext('2d')
 							if (ctx) {
-								const dataUrl = ctx.canvas.toDataURL()
-								onCreateComponent({
-									name: componentName,
-									categoryId: '1',
-									dataUrl,
-								})
+								const canvas = canvasRef.current
+								const imageData = ctx.getImageData(
+									0,
+									0,
+									canvas.width,
+									canvas.height
+								)
+								const { data, width, height } = imageData
+
+								let minX = width,
+									minY = height,
+									maxX = 0,
+									maxY = 0
+
+								for (let y = 0; y < height; y++) {
+									for (let x = 0; x < width; x++) {
+										const index = (y * width + x) * 4
+										const alpha = data[index + 3]
+										if (alpha > 0) {
+											if (x < minX) minX = x
+											if (x > maxX) maxX = x
+											if (y < minY) minY = y
+											if (y > maxY) maxY = y
+										}
+									}
+								}
+
+								const croppedWidth = maxX - minX + 1
+								const croppedHeight = maxY - minY + 1
+
+								const croppedCanvas = document.createElement('canvas')
+								croppedCanvas.width = croppedWidth
+								croppedCanvas.height = croppedHeight
+								const croppedCtx = croppedCanvas.getContext('2d')
+
+								if (croppedCtx) {
+									croppedCtx.putImageData(
+										ctx.getImageData(minX, minY, croppedWidth, croppedHeight),
+										0,
+										0
+									)
+									const dataUrl = croppedCanvas.toDataURL()
+									onCreateComponent({
+										name: componentName,
+										categoryId: '1',
+										dataUrl,
+									})
+								}
 							}
 						}
 					}}>
