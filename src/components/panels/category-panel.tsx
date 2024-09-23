@@ -85,14 +85,16 @@ export const DraggableComponentImg: React.FC<
 	} & React.HTMLProps<HTMLImageElement>
 > = ({ component, ...props }) => {
 	return (
-		<img
-			draggable={false}
-			id={component.id}
-			src={component.dataUrl}
-			alt={component.name}
-			className='w-full h-full object-contain rounded-t-xl'
-			{...props}
-		/>
+		<div className='w-full h-full flex items-center justify-center'>
+			<img
+				draggable={false}
+				id={component.id}
+				src={component.dataUrl}
+				alt={component.name}
+				className='size-auto max-h-20 object-contain rounded-t-xl'
+				{...props}
+			/>
+		</div>
 	)
 }
 

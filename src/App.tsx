@@ -227,7 +227,7 @@ function App() {
 									draggable={false}
 									src={c.component.dataUrl}
 									alt={c.component.name}
-									className='size-32 object-contain'
+									className='size-auto object-contain p-2'
 								/>
 							</div>
 						))}
