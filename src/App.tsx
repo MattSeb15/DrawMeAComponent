@@ -11,6 +11,7 @@ import CategoryItem, {
 } from './components/panels/category-panel'
 import Moveable from 'react-moveable'
 import Selecto from 'react-selecto'
+import { arrayMove, List } from 'react-movable'
 
 function App() {
 	const [components, setComponents] = useState<Component[]>(() => {
@@ -159,22 +160,57 @@ function App() {
 			const scale = 1
 			const id = component.id + '_' + canvasComponents.length
 			const style = `translate(${x}px, ${y}px)`
-
 			setCanvasComponents([
-				...canvasComponents,
 				{
 					id,
 					component,
 					transform: style,
 					zIndex: canvasComponents.length + 1,
 					scale,
+					visible: true,
+					layerName: component.name + '_' + canvasComponents.length,
 				},
+				...canvasComponents,
 			])
 		}
 	}
+
 	const canvasRef = useRef<HTMLDivElement>(null)
+	const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([])
+	const moveableRef = useRef<Moveable>(null)
+	const selectoRef = useRef<Selecto>(null)
 
 	const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 })
+
+	const [clickedLayer, setClickedLayer] = useState<ICanvasComponent | null>(
+		null
+	)
+
+	const [clickedLayerName, setClickedLayerName] = useState('')
+	const inputRef = useRef<HTMLInputElement>(null)
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (inputRef.current && inputRef.current.contains(event.target as Node)) {
+				// Si el clic ocurrió dentro del input, no hacer nada
+				return
+			}
+			setClickedLayer(null)
+			if (clickedLayerName !== '') {
+				const updatedCanvasComponents = canvasComponents.map(c =>
+					c.id === clickedLayer?.id ? { ...c, layerName: clickedLayerName } : c
+				)
+				setCanvasComponents(updatedCanvasComponents)
+				setClickedLayerName('')
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside)
+
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [canvasComponents, clickedLayer, clickedLayerName])
+
 	useEffect(() => {
 		const handleScroll = () => {
 			if (canvasRef.current) {
@@ -185,21 +221,57 @@ function App() {
 			}
 		}
 
+		const handleKeyDown = (event: KeyboardEvent) => {
+			console.log(`Tecla presionada: ${event.key}`)
+			if (targets.length === 0) return
+			if (event.key === 'Delete') {
+				const updatedCanvasComponents = canvasComponents.filter(
+					c => !targets.map(t => t.id).includes(c.id)
+				)
+				setCanvasComponents(updatedCanvasComponents)
+				setTargets([])
+			}
+		}
+
 		const canvasElement = canvasRef.current
 		if (canvasElement) {
 			canvasElement.addEventListener('scroll', handleScroll)
 		}
 
+		window.addEventListener('keydown', handleKeyDown)
+
 		return () => {
 			if (canvasElement) {
 				canvasElement.removeEventListener('scroll', handleScroll)
 			}
+			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [])
+	}, [targets, canvasComponents])
 
-	const [targets, setTargets] = useState<Array<HTMLElement | SVGElement>>([])
-	const moveableRef = useRef<Moveable>(null)
-	const selectoRef = useRef<Selecto>(null)
+	useEffect(() => {
+		if (clickedLayer) {
+			inputRef.current?.focus()
+		}
+	}, [clickedLayer])
+
+	const handleKeyDownInput = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === 'Enter') {
+			setClickedLayer(null)
+			if (clickedLayerName !== '') {
+				const updatedCanvasComponents = canvasComponents.map(c =>
+					c.id === clickedLayer?.id ? { ...c, layerName: clickedLayerName } : c
+				)
+				setCanvasComponents(updatedCanvasComponents)
+				setClickedLayerName('')
+			}
+			//unfocus input
+			inputRef.current?.blur()
+		} else if (event.key === 'Escape') {
+			setClickedLayer(null)
+			setClickedLayerName('')
+			inputRef.current?.blur()
+		}
+	}
 
 	return (
 		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
@@ -220,6 +292,8 @@ function App() {
 								className='target absolute'
 								style={{
 									transform: c.transform,
+									zIndex: c.zIndex,
+									opacity: c.visible ? 1 : 0,
 								}}
 								id={c.id}
 								key={i}>
@@ -398,17 +472,158 @@ function App() {
 				)}
 			</div>
 			<div className='col-span-2 row-span-7 bg-custom-gray-1'>
-				<div className='flex flex-col w-full h-full items-center'>
-					<DrawMePanel
-						onCreateComponent={component => {
-							const currentId = selectedCategory?.id || '0'
-							component.categoryId = currentId
-							component.id = crypto.randomUUID()
-							if (component.name === '')
-								component.name = 'C-' + crypto.randomUUID().slice(0, 5)
-							setComponents([...components, component])
-						}}
-					/>
+				<div className='flex w-full h-full'>
+					<div className='w-12 border-r-4 border-r-custom-gray-2'>
+						<div className='flex flex-col gap-4 p-1'>
+							<button
+								className='btn btn-sm btn-square bg-custom-gray-3 hover:bg-custom-gray-3 border-none text-xl absolute'
+								onClick={() => {}}>
+								<span className='icon-[pixelarticons--card-stack]'></span>
+							</button>
+							<div className='w-60 h-72 bg-custom-gray-2 border-2 drop-shadow-lg border-custom-gray-3 rounded-lg relative z-50 -left-60 overflow-auto'>
+								<p className='text-sm text-center'>Capas</p>
+								<div className='divider h-0 m-1'></div>
+								<List
+									lockVertically
+									values={canvasComponents}
+									onChange={({ oldIndex, newIndex }) => {
+										const updatedComponents = arrayMove(
+											canvasComponents,
+											oldIndex,
+											newIndex
+										).map((component, index, array) => ({
+											...component,
+											zIndex: array.length - index, // Asigna un zIndex más alto a los elementos más arriba en la lista
+										}))
+										setCanvasComponents(updatedComponents)
+									}}
+									renderList={({ children, props }) => (
+										<ul
+											className='flex flex-col gap-1 p-1'
+											{...props}>
+											{children}
+										</ul>
+									)}
+									renderItem={({ value, props, isDragged }) => (
+										<div
+											className={
+												'flex gap-2 items-center p-2 z-50 rounded-md transition-colors ease-linear duration-150' +
+												(targets.map(t => t.id).includes(value.id) || isDragged
+													? ' bg-custom-gray-3'
+													: ' bg-transparent')
+											}
+											{...props}>
+											<button
+												data-movable-handle
+												className='btn btn-square btn-xs bg-custom-gray-3 border-none hover:bg-custom-gray-3'
+												style={{
+													cursor: isDragged ? 'grabbing' : 'grab',
+												}}
+												tabIndex={-1}>
+												<span className='icon-[pixelarticons--menu] size-5 flex-none'></span>
+											</button>
+											<label className='swap'>
+												<input
+													onChange={() => {
+														const updatedCanvasComponents =
+															canvasComponents.map(c =>
+																c.id === value.id
+																	? { ...c, visible: !c.visible }
+																	: c
+															)
+														setCanvasComponents(updatedCanvasComponents)
+													}}
+													type='checkbox'
+												/>
+												<span
+													className={
+														value.visible
+															? `icon-[pixelarticons--eye]`
+															: `icon-[pixelarticons--eye-closed]`
+													}></span>
+											</label>
+											<button
+												onClick={() => {
+													if (targets.map(t => t.id).includes(value.id)) {
+														setTargets(targets.filter(t => t.id !== value.id))
+													} else
+														setTargets([document.getElementById(value.id)!])
+												}}
+												className='bg-custom-gray-3/50 w-10 rounded-lg p-1'
+												style={{
+													border: targets.map(t => t.id).includes(value.id)
+														? '2px solid rgb(59 130 246)'
+														: '2px solid transparent',
+													boxSizing: 'border-box',
+												}}>
+												<img
+													draggable={false}
+													src={value.component.dataUrl}
+													alt={value.component.name}
+													className='size-auto object-contain'
+												/>
+											</button>
+											<button
+												className='w-20'
+												onDoubleClick={() => {
+													setClickedLayer(value)
+													setClickedLayerName(value.layerName)
+												}}>
+												{clickedLayer?.id === value.id ? (
+													<div
+														title={value.layerName}
+														className='w-full h-fit'>
+														<input
+															onChange={e => {
+																setClickedLayerName(e.target.value)
+															}}
+															ref={inputRef}
+															type='text'
+															placeholder='layer name'
+															value={clickedLayerName}
+															className='input input-bordered input-sm w-full max-w-xs bg-custom-gray-1 text-xs'
+															onKeyDown={handleKeyDownInput}
+														/>
+													</div>
+												) : (
+													<p
+														title={value.layerName}
+														className='truncate text-xs w-full text-start font-bold'>
+														{value.layerName}
+													</p>
+												)}
+											</button>
+											{/* TODO: DO THIS ON A R-CLICK MENU */}
+											{/* <button
+												className='btn btn-square btn-xs bg-custom-gray-3 hover:bg-custom-gray-3 border-none text-xl'
+												onClick={() => {
+													setCanvasComponents(
+														canvasComponents.filter(
+															component => component.id !== value.id
+														)
+													)
+													setTargets(targets.filter(t => t.id !== value.id))
+												}}>
+												<span className='icon-[pixelarticons--trash-alt]'></span>
+											</button> */}
+										</div>
+									)}
+								/>
+							</div>
+						</div>
+					</div>
+					<div className='flex flex-col w-full h-full items-center'>
+						<DrawMePanel
+							onCreateComponent={component => {
+								const currentId = selectedCategory?.id || '0'
+								component.categoryId = currentId
+								component.id = crypto.randomUUID()
+								if (component.name === '')
+									component.name = 'C-' + crypto.randomUUID().slice(0, 5)
+								setComponents([...components, component])
+							}}
+						/>
+					</div>
 				</div>
 			</div>
 			<div className='col-span-7 row-start-7 bg-custom-gray-2 relative'>
