@@ -38,6 +38,8 @@ export interface ICanvasComponent {
 	transform: string
 	zIndex: number
 	scale: number
+	visible: boolean
+	layerName: string
 }
 
 export interface ScrollPosition {
