@@ -400,7 +400,7 @@ function App() {
 				</div>
 				{selectedCategory && (
 					<>
-						<div className='w-fit h-[85%] max-h-fit bg-custom-gray-3 p-2 drop-shadow-lg overflow-auto border-custom-gray-2 border-2 rounded-lg absolute bottom-7 left-2'>
+						<div className='w-fit h-[85%] max-h-fit bg-custom-gray-3 p-2 drop-shadow-lg overflow-auto border-custom-gray-2 border-2 rounded-lg absolute bottom-7 left-2 z-[1000000]'>
 							<div className='flex flex-col gap-2 relative'>
 								{selectedCategory ? (
 									selectedCategory.id === '0' ? (
@@ -465,7 +465,7 @@ function App() {
 								) : null}
 							</div>
 						</div>
-						<div className='text-start text-sm font-bold absolute top-5 left-2 bg-custom-gray-3 p-2 drop-shadow-lg border-custom-gray-2 border-2 rounded-lg truncate max-w-fit w-72'>
+						<div className='text-start text-sm font-bold absolute top-5 left-2 bg-custom-gray-3 p-2 drop-shadow-lg border-custom-gray-2 border-2 rounded-lg truncate max-w-fit w-72 z-[1000000]'>
 							{selectedCategory.name}
 						</div>
 					</>
