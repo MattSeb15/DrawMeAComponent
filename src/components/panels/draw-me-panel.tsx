@@ -23,7 +23,7 @@ const DrawMePanel: React.FC<DrawMePanelProps> = ({ onCreateComponent }) => {
 	}
 
 	return (
-		<div className='flex flex-col w-full h-full p-2 overflow-auto'>
+		<div className='flex flex-col w-full h-1/2 overflow-auto'>
 			<div className='cross w-full h-80 mb-5'>
 				<Canvas
 					color={color}
