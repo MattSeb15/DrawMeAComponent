@@ -549,7 +549,7 @@ function App() {
 													} else
 														setTargets([document.getElementById(value.id)!])
 												}}
-												className='bg-custom-gray-3/50 w-10 rounded-lg p-1'
+												className='bg-custom-gray-3/50 w-10 rounded-lg p-1 size-10'
 												style={{
 													border: targets.map(t => t.id).includes(value.id)
 														? '2px solid rgb(59 130 246)'
@@ -560,7 +560,7 @@ function App() {
 													draggable={false}
 													src={value.component.dataUrl}
 													alt={value.component.name}
-													className='size-auto object-contain'
+													className='size-full object-contain'
 												/>
 											</button>
 											<button
