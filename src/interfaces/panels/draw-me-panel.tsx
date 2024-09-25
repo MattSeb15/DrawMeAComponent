@@ -20,18 +20,6 @@ export interface CanvasProps {
 	canvasRef: React.RefObject<HTMLCanvasElement>
 }
 
-export interface ControlsProps {
-	canvasRef: React.RefObject<HTMLCanvasElement>
-	color: string
-	brushSize: number
-	componentName: string
-	onColorChange: (color: string) => void
-	onBrushSizeChange: (size: number) => void
-	onClear: () => void
-	onChangeComponentName: (name: string) => void
-	onCreateComponent: (component: Component) => void
-}
-
 export interface ICanvasComponent {
 	id: string
 	component: Component

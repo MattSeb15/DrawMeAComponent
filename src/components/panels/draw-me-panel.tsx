@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
 	CanvasProps,
-	ControlsProps,
 	DrawMePanelProps,
 } from '../../interfaces/panels/draw-me-panel'
 
@@ -22,32 +21,121 @@ const DrawMePanel: React.FC<DrawMePanelProps> = ({ onCreateComponent }) => {
 		setComponentName(name)
 	}
 
-	return (
-		<div className='flex flex-col w-full h-1/2 overflow-auto'>
-			<div className='cross w-full h-80 mb-5'>
-				<Canvas
-					color={color}
-					brushSize={brushSize}
-					canvasRef={canvasRef}
-				/>
-			</div>
-			<Controls
-				canvasRef={canvasRef}
-				color={color}
-				brushSize={brushSize}
-				componentName={componentName}
-				onColorChange={setColor}
-				onBrushSizeChange={setBrushSize}
-				onClear={clearCanvas}
-				onChangeComponentName={onChangeComponentName}
-				onCreateComponent={c => {
-					onCreateComponent(c)
-					//clear canvas
-					clearCanvas()
-					//clear component name
+	const handleOnCreate = () => {
+		if (canvasRef.current) {
+			const ctx = canvasRef.current.getContext('2d')
+			if (ctx) {
+				const canvas = canvasRef.current
+				const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+				const { data, width, height } = imageData
+
+				let minX = width,
+					minY = height,
+					maxX = 0,
+					maxY = 0
+
+				for (let y = 0; y < height; y++) {
+					for (let x = 0; x < width; x++) {
+						const index = (y * width + x) * 4
+						const alpha = data[index + 3]
+						if (alpha > 0) {
+							if (x < minX) minX = x
+							if (x > maxX) maxX = x
+							if (y < minY) minY = y
+							if (y > maxY) maxY = y
+						}
+					}
+				}
+
+				const croppedWidth = maxX - minX + 1
+				const croppedHeight = maxY - minY + 1
+
+				const croppedCanvas = document.createElement('canvas')
+				croppedCanvas.width = croppedWidth
+				croppedCanvas.height = croppedHeight
+				const croppedCtx = croppedCanvas.getContext('2d')
+
+				if (croppedCtx) {
+					croppedCtx.putImageData(
+						ctx.getImageData(minX, minY, croppedWidth, croppedHeight),
+						0,
+						0
+					)
+					const dataUrl = croppedCanvas.toDataURL()
+					onCreateComponent({
+						name: componentName,
+						categoryId: '1',
+						dataUrl,
+					})
 					setComponentName('')
-				}}
-			/>
+				}
+			}
+		}
+	}
+
+	return (
+		<div className='grid grid-cols-6 grid-rows-6 gap-2 w-full h-1/2 bg-custom-gray-2 rounded-md overflow-auto'>
+			<div className='col-span-5 row-span-5 p-1'>
+				<div className='w-full h-full cross rounded-lg border-2 border-custom-gray-3'>
+					<Canvas
+						color={color}
+						brushSize={brushSize}
+						canvasRef={canvasRef}
+					/>{' '}
+				</div>
+			</div>
+			<div className='col-span-5 col-start-1 row-start-6 p-1'>
+				<div className='flex gap-2'>
+					<input
+						type='text'
+						placeholder='Component name'
+						className='input input-bordered input-sm w-full max-w-xs bg-custom-gray-1'
+						value={componentName}
+						onChange={e => onChangeComponentName(e.target.value)}
+					/>
+					<button
+						className='btn btn-square btn-sm border-none bg-green-800 hover:bg-green-900'
+						onClick={handleOnCreate}>
+						<span className='icon-[pixelarticons--plus]'></span>
+					</button>
+				</div>
+			</div>
+			<div className='row-span-6 col-start-6 row-start-1 p-1'>
+				<div className='h-full flex flex-col items-center justify-between gap-3'>
+					<div className='flex flex-col gap-2'>
+						<input
+							onChange={e => setBrushSize(parseInt(e.target.value))}
+							type='range'
+							min={1}
+							max='50'
+							value={brushSize}
+							style={{
+								writingMode: 'vertical-lr',
+								direction: 'rtl',
+								verticalAlign: 'bottom',
+							}}
+							className='h-24'
+						/>
+						<div className='input input-xs bg-custom-gray-1 w-10 text-center select-none'>
+							{brushSize}
+						</div>
+					</div>
+					<input
+						className='rounded-full size-8 bg-transparent flex-none'
+						type='color'
+						value={color}
+						onChange={e => setColor(e.target.value)}
+					/>
+
+					<div className='flex flex-col h-full justify-around'>
+						<button
+							className='btn btn-square btn-sm border-none bg-red-600 hover:bg-custom-gray-3/50'
+							onClick={clearCanvas}>
+							<span className='icon-[pixelarticons--trash-alt]'></span>
+						</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	)
 }
@@ -123,141 +211,20 @@ const Canvas: React.FC<CanvasProps> = ({ color, brushSize, canvasRef }) => {
 		setDrawing(false)
 	}
 
-	const clearCanvas = () => {
+	/* 	const clearCanvas = () => {
 		if (context && canvasRef.current) {
 			context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
 		}
-	}
+	} */
 
 	return (
-		<div className='w-full h-full relative rounded-lg border-2 border-custom-gray-3'>
-			<canvas
-				ref={canvasRef}
-				onMouseDown={startDrawing}
-				onMouseMove={draw}
-				onMouseUp={stopDrawing}
-				onMouseLeave={stopDrawing}
-				style={{ width: '100%', height: '100%', display: 'block' }}
-			/>
-			<button
-				onClick={clearCanvas}
-				className='btn btn-square bg-custom-gray-2 hover:bg-custom-gray-3 border-none text-xl'
-				style={{ position: 'absolute', top: '10px', right: '10px' }}>
-				<span className='icon-[pixelarticons--trash]'></span>
-			</button>
-		</div>
-	)
-}
-
-const Controls: React.FC<ControlsProps> = ({
-	canvasRef,
-	color,
-	brushSize,
-	componentName,
-	onColorChange,
-	onBrushSizeChange,
-	onChangeComponentName,
-	onCreateComponent,
-}) => {
-	return (
-		<div className='controls flex flex-col items-start p-2 bg-custom-gray-2 rounded-md'>
-			<div className='flex flex-col gap-5 w-full'>
-				<p className='font-medium'>Pencil</p>
-				<div className='w-full'>
-					<input
-						type='range'
-						min='1'
-						max='5'
-						className={`range range-sm`}
-						style={{ accentColor: color }}
-						value={brushSize}
-						onChange={e => onBrushSizeChange(parseInt(e.target.value))}
-					/>
-					<div className='flex w-full justify-between px-2 text-xs'>
-						<span>1</span>
-						<span>2</span>
-						<span>3</span>
-						<span>4</span>
-						<span>5</span>
-					</div>
-				</div>
-				<input
-					type='color'
-					value={color}
-					onChange={e => onColorChange(e.target.value)}
-				/>
-			</div>
-			<div className='divider my-1'></div>
-			<div className='w-full flex flex-col gap-4'>
-				<p className='font-medium'>Component Options</p>
-				<input
-					type='text'
-					placeholder='Component name'
-					className='input input-bordered input-sm w-full max-w-xs bg-custom-gray-1'
-					value={componentName}
-					onChange={e => onChangeComponentName(e.target.value)}
-				/>
-				<button
-					className='btn btn-block btn-sm border-none bg-green-800 hover:bg-green-900'
-					onClick={() => {
-						if (canvasRef.current) {
-							const ctx = canvasRef.current.getContext('2d')
-							if (ctx) {
-								const canvas = canvasRef.current
-								const imageData = ctx.getImageData(
-									0,
-									0,
-									canvas.width,
-									canvas.height
-								)
-								const { data, width, height } = imageData
-
-								let minX = width,
-									minY = height,
-									maxX = 0,
-									maxY = 0
-
-								for (let y = 0; y < height; y++) {
-									for (let x = 0; x < width; x++) {
-										const index = (y * width + x) * 4
-										const alpha = data[index + 3]
-										if (alpha > 0) {
-											if (x < minX) minX = x
-											if (x > maxX) maxX = x
-											if (y < minY) minY = y
-											if (y > maxY) maxY = y
-										}
-									}
-								}
-
-								const croppedWidth = maxX - minX + 1
-								const croppedHeight = maxY - minY + 1
-
-								const croppedCanvas = document.createElement('canvas')
-								croppedCanvas.width = croppedWidth
-								croppedCanvas.height = croppedHeight
-								const croppedCtx = croppedCanvas.getContext('2d')
-
-								if (croppedCtx) {
-									croppedCtx.putImageData(
-										ctx.getImageData(minX, minY, croppedWidth, croppedHeight),
-										0,
-										0
-									)
-									const dataUrl = croppedCanvas.toDataURL()
-									onCreateComponent({
-										name: componentName,
-										categoryId: '1',
-										dataUrl,
-									})
-								}
-							}
-						}
-					}}>
-					Create
-				</button>
-			</div>
-		</div>
+		<canvas
+			ref={canvasRef}
+			onMouseDown={startDrawing}
+			onMouseMove={draw}
+			onMouseUp={stopDrawing}
+			onMouseLeave={stopDrawing}
+		/>
 	)
 }
 
