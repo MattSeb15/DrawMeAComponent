@@ -9,7 +9,7 @@ import DrawMePanel from './components/panels/draw-me-panel'
 import CategoryItem, {
 	ComponentPanel,
 } from './components/panels/category-panel'
-import Moveable from 'react-moveable'
+import Moveable, { MoveableManagerInterface, Renderer } from 'react-moveable'
 import Selecto from 'react-selecto'
 import { arrayMove, List } from 'react-movable'
 
@@ -305,6 +305,37 @@ function App() {
 		}
 	}, [])
 
+	const DimensionViewable = {
+		name: 'dimensionViewable',
+		props: [],
+		events: [],
+		render(moveable: MoveableManagerInterface) {
+			const rect = moveable.getRect()
+			return (
+				<div
+					key={'dimension-viewer'}
+					className={'moveable-dimension'}
+					style={{
+						position: 'absolute',
+						left: `${rect.width / 2}px`,
+						top: `${rect.height + 20}px`,
+						background: '#4af',
+						opacity: 0.9,
+						borderRadius: '2px',
+						padding: '2px 4px',
+						color: 'white',
+						fontSize: '13px',
+						whiteSpace: 'nowrap',
+						fontWeight: 'bold',
+						willChange: 'transform',
+						transform: `translate(-50%, 0px)`,
+					}}>
+					{Math.round(rect.width)} x {Math.round(rect.height)}
+				</div>
+			)
+		},
+	} as const
+
 	return (
 		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
 			<div className='col-span-7 row-span-6 relative'>
@@ -344,6 +375,7 @@ function App() {
 						<Moveable
 							ref={moveableRef}
 							target={targets}
+							ables={[DimensionViewable]}
 							draggable={true}
 							scalable={true}
 							scrollable={true}
@@ -352,6 +384,9 @@ function App() {
 								threshold: 30,
 								checkScrollEvent: false,
 								throttleTime: 0,
+							}}
+							props={{
+								dimensionViewable: true,
 							}}
 							rotatable={true}
 							throttleScale={0}
