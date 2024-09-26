@@ -763,7 +763,7 @@ function App() {
 			</div>
 			{contextMenu && (
 				<ul
-					className='absolute rounded-lg bg-custom-gray-3 border-2 border-custom-gray-2 shadow-lg z-50'
+					className='absolute rounded-lg bg-custom-gray-3 border-2 border-custom-gray-2 shadow-lg z-[1000001]'
 					style={{
 						top: contextMenu.y,
 						left: contextMenu.x,
