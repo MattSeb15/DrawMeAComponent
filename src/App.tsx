@@ -590,9 +590,18 @@ function App() {
 									</label>
 									<button
 										onClick={() => {
+											const targetElement = document.getElementById(value.id)
 											if (targets.map(t => t.id).includes(value.id)) {
 												setTargets(targets.filter(t => t.id !== value.id))
-											} else setTargets([document.getElementById(value.id)!])
+											} else {
+												setTargets([document.getElementById(value.id)!])
+												if (targetElement) {
+													targetElement.scrollIntoView({
+														behavior: 'smooth',
+														block: 'center',
+													})
+												}
+											}
 										}}
 										className='bg-custom-gray-3/50 w-10 rounded-lg p-1 size-10 flex-none'
 										style={{
