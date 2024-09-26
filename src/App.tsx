@@ -272,16 +272,51 @@ function App() {
 			inputRef.current?.blur()
 		}
 	}
+	const [canvasSize, setCanvasSize] = useState({ width: 5000, height: 5000 })
+	const canvasContainerRef = useRef<HTMLDivElement>(null)
+	const handleScroll = () => {
+		if (canvasContainerRef.current) {
+			const {
+				scrollTop,
+				scrollHeight,
+				clientHeight,
+				scrollLeft,
+				scrollWidth,
+				clientWidth,
+			} = canvasContainerRef.current
+			const nearBottom = scrollTop + clientHeight >= scrollHeight - 100
+			const nearRight = scrollLeft + clientWidth >= scrollWidth - 100
+
+			if (nearBottom || nearRight) {
+				setCanvasSize(prevSize => ({
+					width: nearRight ? prevSize.width + 1000 : prevSize.width,
+					height: nearBottom ? prevSize.height + 1000 : prevSize.height,
+				}))
+			}
+		}
+	}
+	useEffect(() => {
+		const canvasContainer = canvasContainerRef.current
+		if (canvasContainer) {
+			canvasContainer.addEventListener('scroll', handleScroll)
+			return () => {
+				canvasContainer.removeEventListener('scroll', handleScroll)
+			}
+		}
+	}, [])
 
 	return (
 		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
 			<div className='col-span-7 row-span-6 relative'>
-				<div className='w-full h-full overflow-scroll'>
+				<div
+					className='w-full h-full overflow-scroll'
+					ref={canvasContainerRef}>
 					<div
 						ref={canvasRef}
 						onDrop={handleOnDrop}
 						onDragOver={e => e.preventDefault()}
-						className='w-[5000px] h-[5000px] paper relative elements'>
+						style={{ width: canvasSize.width, height: canvasSize.height }}
+						className='paper relative elements'>
 						{/* 	<div
 							className='target bg-white size-28'
 							ref={targetRef}>
