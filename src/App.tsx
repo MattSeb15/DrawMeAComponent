@@ -259,6 +259,15 @@ function App() {
 						keepRatio: !prevOptions.keepRatio,
 					}))
 					break
+				case 'e':
+					{
+						setTargets([])
+						setCanvasOptions(prevOptions => ({
+							...prevOptions,
+							readOnly: !prevOptions.readOnly,
+						}))
+					}
+					break
 				default:
 					break
 			}
@@ -376,6 +385,7 @@ function App() {
 					keepRatio: true,
 					scalable: true,
 					draggable: true,
+					readOnly: false,
 			  }
 	})
 
@@ -469,6 +479,25 @@ function App() {
 											setCanvasOptions({
 												...canvasOptions,
 												keepRatio: e.target.checked,
+											})
+										}}
+									/>
+								</label>
+							</div>
+							<div className='form-control p-0.5 bg-slate-600 rounded-md'>
+								<label className='label cursor-pointer flex flex-col-reverse'>
+									<span className='label-text text-xs'>
+										R<span className='underline'>e</span>ad Only
+									</span>
+									<input
+										type='checkbox'
+										className='toggle toggle-xs [--tglbg:#21252b]'
+										checked={canvasOptions.readOnly}
+										onChange={e => {
+											setTargets([])
+											setCanvasOptions({
+												...canvasOptions,
+												readOnly: e.target.checked,
 											})
 										}}
 									/>
@@ -642,12 +671,14 @@ function App() {
 								}
 							}}
 							onSelect={e => {
+								if (canvasOptions.readOnly) return
 								if (e.isDragStartEnd) {
 									return
 								}
 								setTargets(e.selected)
 							}}
 							onSelectEnd={e => {
+								if (canvasOptions.readOnly) return
 								if (e.isDragStartEnd) {
 									e.inputEvent.preventDefault()
 									moveableRef.current!.waitToChangeTarget().then(() => {

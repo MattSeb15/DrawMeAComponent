@@ -52,4 +52,5 @@ export interface ICanvasOptions {
 	keepRatio: boolean
 	scalable: boolean
 	draggable: boolean
+	readOnly: boolean
 }
