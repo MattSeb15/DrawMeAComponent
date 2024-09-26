@@ -653,7 +653,7 @@ function App() {
 										/>
 									</button>
 									<button
-										className='w-20'
+										className='w-56'
 										onDoubleClick={() => {
 											setClickedLayer(value)
 											setClickedLayerName(value.layerName)
