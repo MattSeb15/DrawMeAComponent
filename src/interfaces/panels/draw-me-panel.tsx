@@ -46,3 +46,10 @@ export interface DrawMePanelState {
 	componentName: string
 	canvasScrollPosition: ScrollPosition
 }
+
+export interface ICanvasOptions {
+	rotatable: boolean
+	keepRatio: boolean
+	scalable: boolean
+	draggable: boolean
+}

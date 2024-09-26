@@ -4,6 +4,7 @@ import {
 	ICanvasComponent,
 	Category,
 	Component,
+	ICanvasOptions,
 } from './interfaces/panels/draw-me-panel'
 import DrawMePanel from './components/panels/draw-me-panel'
 import CategoryItem, {
@@ -223,13 +224,43 @@ function App() {
 
 		const handleKeyDown = (event: KeyboardEvent) => {
 			console.log(`Tecla presionada: ${event.key}`)
-			if (targets.length === 0) return
-			if (event.key === 'Delete') {
-				const updatedCanvasComponents = canvasComponents.filter(
-					c => !targets.map(t => t.id).includes(c.id)
-				)
-				setCanvasComponents(updatedCanvasComponents)
-				setTargets([])
+
+			switch (event.key.toLowerCase()) {
+				case 'delete': {
+					if (targets.length === 0) return
+					const updatedCanvasComponents = canvasComponents.filter(
+						c => !targets.map(t => t.id).includes(c.id)
+					)
+					setCanvasComponents(updatedCanvasComponents)
+					setTargets([])
+					break
+				}
+				case 's':
+					setCanvasOptions(prevOptions => ({
+						...prevOptions,
+						scalable: !prevOptions.scalable,
+					}))
+					break
+				case 'r':
+					setCanvasOptions(prevOptions => ({
+						...prevOptions,
+						rotatable: !prevOptions.rotatable,
+					}))
+					break
+				case 'd':
+					setCanvasOptions(prevOptions => ({
+						...prevOptions,
+						draggable: !prevOptions.draggable,
+					}))
+					break
+				case 'k':
+					setCanvasOptions(prevOptions => ({
+						...prevOptions,
+						keepRatio: !prevOptions.keepRatio,
+					}))
+					break
+				default:
+					break
 			}
 		}
 
@@ -336,9 +367,160 @@ function App() {
 		},
 	} as const
 
+	const [canvasOptions, setCanvasOptions] = useState<ICanvasOptions>(() => {
+		const savedCanvasOptions = localStorage.getItem('canvasOptions')
+		return savedCanvasOptions
+			? JSON.parse(savedCanvasOptions)
+			: {
+					rotatable: true,
+					keepRatio: true,
+					scalable: true,
+					draggable: true,
+			  }
+	})
+
+	useEffect(() => {
+		localStorage.setItem('canvasOptions', JSON.stringify(canvasOptions))
+	}, [canvasOptions])
+
 	return (
 		<div className='grid grid-cols-9 grid-rows-7 w-full h-full bg-custom-gray-3 relative'>
-			<div className='col-span-7 row-span-6 relative'>
+			<div className='flex flex-col w-full h-32 z-[50000] fixed bg-custom-gray-1 drop-shadow-lg p-2'>
+				<h1 className='text-sm font-semibold'>Draw Me A Component by MOST </h1>
+				<div
+					role='tablist'
+					className='tabs tabs-sm tabs-bordered'>
+					<input
+						type='radio'
+						name='my_tabs_1'
+						role='tab'
+						className='tab mr-2 mb-0.5'
+						aria-label='Canvas'
+						defaultChecked
+					/>
+					<div
+						role='tabpanel'
+						className='tab-content w-full p-1'>
+						<div className='flex gap-3 items-center'>
+							<div className='form-control p-0.5 bg-custom-gray-2 rounded-md w-16 h-fit'>
+								<label className='label cursor-pointer flex flex-col-reverse'>
+									<span className='label-text text-xs'>
+										<span className='underline'>S</span>calable
+									</span>
+									<input
+										type='checkbox'
+										className='toggle toggle-xs [--tglbg:#21252b]'
+										checked={canvasOptions.scalable}
+										onChange={e => {
+											setCanvasOptions({
+												...canvasOptions,
+												scalable: e.target.checked,
+											})
+										}}
+									/>
+								</label>
+							</div>
+							<div className='form-control p-0.5 bg-custom-gray-2 rounded-md w-16'>
+								<label className='label cursor-pointer flex flex-col-reverse'>
+									<span className='label-text text-xs'>
+										<span className='underline'>R</span>otatable
+									</span>
+									<input
+										type='checkbox'
+										className='toggle toggle-xs [--tglbg:#21252b]'
+										checked={canvasOptions.rotatable}
+										onChange={e => {
+											setCanvasOptions({
+												...canvasOptions,
+												rotatable: e.target.checked,
+											})
+										}}
+									/>
+								</label>
+							</div>
+							<div className='form-control p-0.5 bg-custom-gray-2 rounded-md'>
+								<label className='label cursor-pointer flex flex-col-reverse'>
+									<span className='label-text text-xs'>
+										<span className='underline'>D</span>raggable
+									</span>
+									<input
+										type='checkbox'
+										className='toggle toggle-xs [--tglbg:#21252b]'
+										checked={canvasOptions.draggable}
+										onChange={e => {
+											setCanvasOptions({
+												...canvasOptions,
+												draggable: e.target.checked,
+											})
+										}}
+									/>
+								</label>
+							</div>
+							<div className='form-control p-0.5 bg-custom-gray-2 rounded-md'>
+								<label className='label cursor-pointer flex flex-col-reverse'>
+									<span className='label-text text-xs'>
+										<span className='underline'>K</span>eep Radio
+									</span>
+									<input
+										type='checkbox'
+										className='toggle toggle-xs [--tglbg:#21252b]'
+										checked={canvasOptions.keepRatio}
+										onChange={e => {
+											setCanvasOptions({
+												...canvasOptions,
+												keepRatio: e.target.checked,
+											})
+										}}
+									/>
+								</label>
+							</div>
+						</div>
+					</div>
+
+					<input
+						type='radio'
+						name='my_tabs_1'
+						role='tab'
+						className='tab mr-2 mb-0.5'
+						aria-label='Insert'
+					/>
+					<div
+						role='tabpanel'
+						className='tab-content'>
+						Tab content Insert
+					</div>
+
+					<input
+						type='radio'
+						name='my_tabs_1'
+						role='tab'
+						className='tab mr-2 mb-0.5'
+						aria-label='View'
+					/>
+					<div
+						role='tabpanel'
+						className='tab-content'>
+						Tab content View
+					</div>
+					{targets.length > 0 && (
+						<>
+							<input
+								type='radio'
+								name='my_tabs_1'
+								role='tab'
+								className='tab mr-2 mb-0.5 font-bold text-blue-300'
+								aria-label='Component'
+							/>
+							<div
+								role='tabpanel'
+								className='tab-content'>
+								Tab content Component
+							</div>
+						</>
+					)}
+				</div>
+			</div>
+			<div className='col-span-7 row-span-6 relative mt-32'>
 				<div
 					className='w-full h-full overflow-scroll'
 					ref={canvasContainerRef}>
@@ -376,8 +558,8 @@ function App() {
 							ref={moveableRef}
 							target={targets}
 							ables={[DimensionViewable]}
-							draggable={true}
-							scalable={true}
+							draggable={canvasOptions.draggable}
+							scalable={canvasOptions.scalable}
 							scrollable={true}
 							scrollOptions={{
 								container: canvasContainerRef,
@@ -388,9 +570,9 @@ function App() {
 							props={{
 								dimensionViewable: true,
 							}}
-							rotatable={true}
+							rotatable={canvasOptions.rotatable}
 							throttleScale={0}
-							keepRatio={true}
+							keepRatio={canvasOptions.keepRatio}
 							onClickGroup={e => {
 								selectoRef.current!.clickTarget(e.inputEvent, e.inputTarget)
 							}}
@@ -550,7 +732,7 @@ function App() {
 					</>
 				)}
 			</div>
-			<div className='col-span-2 row-span-7 bg-custom-gray-1'>
+			<div className='col-span-2 row-span-7 bg-custom-gray-1 mt-32'>
 				<div className='flex flex-col w-full h-full items-center gap-2 p-2'>
 					<DrawMePanel
 						onCreateComponent={component => {
