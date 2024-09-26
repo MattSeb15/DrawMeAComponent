@@ -346,6 +346,13 @@ function App() {
 							target={targets}
 							draggable={true}
 							scalable={true}
+							scrollable={true}
+							scrollOptions={{
+								container: canvasContainerRef,
+								threshold: 30,
+								checkScrollEvent: false,
+								throttleTime: 0,
+							}}
 							rotatable={true}
 							throttleScale={0}
 							keepRatio={true}
@@ -389,13 +396,15 @@ function App() {
 								})
 								setCanvasComponents(updatedCanvasComponents)
 							}}
-
-							/* onChangeTargets={e => {
-								console.log(
-									'??',
-									JSON.stringify(e.moveable.getRect(), undefined, 4)
-								)
-							}} */
+							onScroll={({ scrollContainer, direction }) => {
+								scrollContainer.scrollBy(direction[0] * 10, direction[1] * 10)
+							}}
+							onScrollGroup={({ targets, scrollContainer, direction }) => {
+								targets.forEach(target => {
+									target.style.transform = `translate(${direction[0]}px, ${direction[1]}px) ${target.style.transform}`
+								})
+								scrollContainer.scrollBy(direction[0] * 10, direction[1] * 10)
+							}}
 						/>
 						<Selecto
 							ref={selectoRef}
