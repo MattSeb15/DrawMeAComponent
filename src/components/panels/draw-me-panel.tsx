@@ -68,6 +68,7 @@ const DrawMePanel: React.FC<DrawMePanelProps> = ({ onCreateComponent }) => {
 						dataUrl,
 					})
 					setComponentName('')
+					clearCanvas()
 				}
 			}
 		}
