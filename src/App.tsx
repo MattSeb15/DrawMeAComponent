@@ -272,7 +272,7 @@ function App() {
 			inputRef.current?.blur()
 		}
 	}
-	const [canvasSize, setCanvasSize] = useState({ width: 5000, height: 5000 })
+	const [canvasSize, setCanvasSize] = useState({ width: 2000, height: 2000 })
 	const canvasContainerRef = useRef<HTMLDivElement>(null)
 	const handleScroll = () => {
 		if (canvasContainerRef.current) {
