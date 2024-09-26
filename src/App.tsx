@@ -838,6 +838,7 @@ function App() {
 									</label>
 									<button
 										onClick={() => {
+											if (canvasOptions.readOnly) return
 											const targetElement = document.getElementById(value.id)
 											if (targets.map(t => t.id).includes(value.id)) {
 												setTargets(targets.filter(t => t.id !== value.id))
@@ -857,6 +858,9 @@ function App() {
 												? '2px solid rgb(59 130 246)'
 												: '2px solid transparent',
 											boxSizing: 'border-box',
+											cursor: canvasOptions.readOnly
+												? 'not-allowed'
+												: 'pointer',
 										}}>
 										<img
 											draggable={false}
